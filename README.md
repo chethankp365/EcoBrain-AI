@@ -38,9 +38,11 @@ Seeded records carry a `SIMULATED` label. Route and sustainability figures are e
 
 ## Production readiness
 
-The current API runtime uses an in-memory store. Supabase authentication, durable persistence, Realtime, signed Storage URLs, and database-backed API operations are not wired yet. The migration at `supabase/migrations/202610130001_initial_schema.sql` defines the initial tables and RLS policies but has not been applied or verified against a Supabase project. Gemini, Resend, and production deployment are also not configured. Do not set `DEMO_MODE=false` until the Supabase-backed API is implemented and verified.
+The current application API still uses an in-memory store; adding Supabase keys alone does not make its reports, assignments, routes, analytics, or notifications persistent. Do not use it with real resident or operational data until the database-backed API and authorization have been implemented and verified.
 
-To continue, create a Supabase project and place its URL, anon key, and service-role key in local `.env` and the deployment environment. Do not send secret values through chat. Apply the migration and test the policies before using real resident data.
+The migrations in `supabase/migrations/` define the initial schema and the required PostgREST role grants. Apply them in filename order in the Supabase SQL Editor. The grants migration is needed because the initial schema did not grant table and sequence privileges to the API roles; row-level security policies remain enabled and continue to control authenticated access.
+
+Use `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` only for public client configuration. Keep the Supabase service-role/secret key under the server-only `SUPABASE_SERVICE_ROLE_KEY` name, and keep `GEMINI_API_KEY` server-side. Never use a `VITE_` prefix for a secret or commit `.env`.
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
 - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)

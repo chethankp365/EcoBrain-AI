@@ -8,7 +8,7 @@ The goal: a REAL, working, premium, deployable product (not a mock-up) where eve
 
 - Frontend: Vite + React 18 + TypeScript, Tailwind CSS 3, React Router, TanStack Query, Zustand, Framer Motion, lucide-react, Recharts, Leaflet + react-leaflet (OpenStreetMap tiles, no key needed), dnd-kit, react-i18next, zod, vite-plugin-pwa.
 - Backend: Vercel serverless TypeScript. ONE catch-all function (`api/[...path].ts`) using Hono that serves every endpoint.
-- Database/Auth/Storage/Realtime: Supabase when keys are present. DEMO_MODE in-memory store when they are not, so the product is still fully walkable.
+- Database/Auth/Storage/Realtime: the target is Supabase. The current API still uses an in-memory store; credentials alone do not enable durable operations. Do not present seeded data as live operational data.
 - AI: Google Gemini API (vision + text, structured JSON) called ONLY from the server. Model from `GEMINI_MODEL`. Deterministic keyword-classifier fallback.
 - Routing: OSRM public demo by default, optional Google Distance Matrix, haversine fallback flagged as approximate.
 - Optimiser: custom TypeScript VRP solver in `/shared/solver` (Python OR-Tools does not fit Vercel Hobby).
