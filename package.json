@@ -1,0 +1,71 @@
+{
+  "name": "ecobrain-ai",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "typecheck": "tsc -b --pretty false",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "seed": "tsx scripts/seed.ts",
+    "eval:ai": "tsx scripts/eval-ai.ts",
+    "simulate:sensors": "tsx scripts/simulate-sensors.ts",
+    "smoke": "tsx scripts/smoke-test.ts"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@supabase/supabase-js": "^2.58.0",
+    "@tanstack/query-core": "5.90.2",
+    "@tanstack/react-query": "5.90.2",
+    "framer-motion": "12.23.22",
+    "hono": "^4.9.9",
+    "i18next": "^25.5.2",
+    "idb-keyval": "^6.2.2",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.544.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-i18next": "^15.7.3",
+    "react-leaflet": "^4.2.1",
+    "react-router-dom": "^6.30.1",
+    "recharts": "^3.2.1",
+    "zod": "^3.25.76",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@types/leaflet": "^1.9.20",
+    "@types/node": "^22.18.8",
+    "@types/react": "^18.3.24",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.36.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.22",
+    "globals": "^16.4.0",
+    "postcss": "^8.5.6",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.20.6",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.44.1",
+    "vite": "6.3.6",
+    "vite-plugin-pwa": "^1.0.3",
+    "vitest": "^3.2.4"
+  },
+  "overrides": {
+    "motion-dom": "12.23.21",
+    "motion-utils": "12.23.6"
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "file:D:/ecobrain-dependencies/node_modules/node_modules/esbuild": true
+  }
+}

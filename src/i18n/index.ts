@@ -1,0 +1,123 @@
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
+
+const common = {
+  en: {
+    nav: {
+      report: 'Report',
+      myReports: 'My reports',
+      worker: 'Worker',
+      dispatch: 'Dispatch',
+      routes: 'Routes',
+      analytics: 'Analytics',
+      hotspots: 'Hotspots',
+      admin: 'Admin',
+      bins: 'Bins',
+      evaluation: 'Evaluation',
+      transparency: 'Transparency',
+    },
+    status: {
+      submitted: 'Submitted',
+      validated: 'Validated',
+      pending_assignment: 'Pending assignment',
+      assigned: 'Assigned',
+      in_progress: 'In progress',
+      completed: 'Completed',
+      needs_review: 'Needs review',
+      partially_completed: 'Partially completed',
+      inaccessible: 'Inaccessible',
+      rejected_duplicate: 'Duplicate',
+      reopened: 'Reopened',
+    },
+    wizard: {
+      category: 'Category',
+      details: 'Details',
+      location: 'Location',
+      photo: 'Photo',
+      review: 'Review',
+    },
+  },
+  hi: {
+    nav: {
+      report: 'रिपोर्ट',
+      myReports: 'मेरी रिपोर्ट',
+      worker: 'कर्मचारी',
+      dispatch: 'डिस्पैच',
+      routes: 'रूट',
+      analytics: 'विश्लेषण',
+      hotspots: 'हॉटस्पॉट',
+      admin: 'प्रशासन',
+      bins: 'डिब्बे',
+      evaluation: 'मूल्यांकन',
+      transparency: 'पारदर्शिता',
+    },
+    status: {
+      submitted: 'जमा',
+      validated: 'सत्यापित',
+      pending_assignment: 'असाइनमेंट लंबित',
+      assigned: 'असाइन',
+      in_progress: 'प्रगति पर',
+      completed: 'पूर्ण',
+      needs_review: 'समीक्षा चाहिए',
+      partially_completed: 'आंशिक',
+      inaccessible: 'पहुँच नहीं',
+      rejected_duplicate: 'डुप्लिकेट',
+      reopened: 'फिर खोला',
+    },
+    wizard: {
+      category: 'श्रेणी',
+      details: 'विवरण',
+      location: 'स्थान',
+      photo: 'फ़ोटो',
+      review: 'समीक्षा',
+    },
+  },
+  kn: {
+    nav: {
+      report: 'ವರದಿ',
+      myReports: 'ನನ್ನ ವರದಿಗಳು',
+      worker: 'ಕಾರ್ಮಿಕ',
+      dispatch: 'ಡಿಸ್ಪ್ಯಾಚ್',
+      routes: 'ಮಾರ್ಗ',
+      analytics: 'ವಿಶ್ಲೇಷಣೆ',
+      hotspots: 'ಹಾಟ್‌ಸ್ಪಾಟ್',
+      admin: 'ಆಡಳಿತ',
+      bins: 'ಬಿನ್',
+      evaluation: 'ಮೌಲ್ಯಮಾಪನ',
+      transparency: 'ಪಾರದರ್ಶಕತೆ',
+    },
+    status: {
+      submitted: 'ಸಲ್ಲಿಸಲಾಗಿದೆ',
+      validated: 'ಮಾನ್ಯ',
+      pending_assignment: 'ನಿಯೋಜನೆ ಬಾಕಿ',
+      assigned: 'ನಿಯೋಜಿಸಲಾಗಿದೆ',
+      in_progress: 'ಪ್ರಗತಿಯಲ್ಲಿ',
+      completed: 'ಪೂರ್ಣ',
+      needs_review: 'ಪರಿಶೀಲನೆ',
+      partially_completed: 'ಭಾಗಶಃ',
+      inaccessible: 'ತಲುಪಲಾಗದು',
+      rejected_duplicate: 'ನಕಲಿ',
+      reopened: 'ಮರು ತೆರೆಯಲಾಗಿದೆ',
+    },
+    wizard: {
+      category: 'ವರ್ಗ',
+      details: 'ವಿವರ',
+      location: 'ಸ್ಥಳ',
+      photo: 'ಫೋಟೋ',
+      review: 'ಪರಿಶೀಲನೆ',
+    },
+  },
+}
+
+void i18n.use(initReactI18next).init({
+  resources: {
+    en: { translation: common.en },
+    hi: { translation: common.hi },
+    kn: { translation: common.kn },
+  },
+  lng: 'en',
+  fallbackLng: 'en',
+  interpolation: { escapeValue: false },
+})
+
+export default i18n
