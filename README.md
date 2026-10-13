@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/hero.svg" alt="EcoBrain AI" width="100%"/>
+<img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/hero.svg" alt="EcoBrain AI" width="100%"/>
 
 <br/>
 
@@ -15,7 +15,7 @@
 
 </div>
 
-<img src="./assets/stats.svg" alt="5 roles, 13 capabilities, 4-step workflow, 1 pilot ward" width="100%"/>
+<img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/stats.svg" alt="5 roles, 13 capabilities, 4-step workflow, 1 pilot ward" width="100%"/>
 
 ## Overview
 
@@ -27,12 +27,12 @@ Waste collection is usually reactive: someone spots an overflowing bin, a compla
 
 AI results are always **suggestions, not proof**. A human reviews classifications and approves routes.
 
-<img src="./assets/pipeline.svg" alt="Pipeline: report, classify, prioritise, route, learn" width="100%"/>
+<img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/pipeline.svg" alt="Pipeline: report, classify, prioritise, route, learn" width="100%"/>
 
 ## Screenshots
 
 <div align="center">
-<img src="./screenshots/01-hero.png" alt="EcoBrain AI landing page" width="100%"/>
+<img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/01-hero.png" alt="EcoBrain AI landing page" width="100%"/>
 <br/><sub>Landing page, with demo content clearly marked <b>SIMULATED</b></sub>
 </div>
 
@@ -40,25 +40,25 @@ AI results are always **suggestions, not proof**. A human reviews classification
 
 <table>
   <tr>
-    <td width="50%"><img src="./screenshots/06-create-account.png" alt="Create account"/><br/><sub><b>Create account.</b> New signups are always residents; admins promote roles later.</sub></td>
-    <td width="50%"><img src="./screenshots/02-how-it-works.png" alt="How it works and route demo"/><br/><sub><b>How it works</b> and the interactive route demo (Optimised / Original order).</sub></td>
+    <td width="50%"><img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/06-create-account.png" alt="Create account"/><br/><sub><b>Create account.</b> New signups are always residents; admins promote roles later.</sub></td>
+    <td width="50%"><img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/02-how-it-works.png" alt="How it works and route demo"/><br/><sub><b>How it works</b> and the interactive route demo (Optimised / Original order).</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="./screenshots/03-capabilities.png" alt="13 capabilities clearly labelled"/><br/><sub><b>13 capabilities</b>, each labelled LIVE, PILOT SETUP or DEMO ONLY.</sub></td>
-    <td width="50%"><img src="./screenshots/04-demo-roles.png" alt="Demo roles"/><br/><sub><b>Demo roles:</b> Resident, Worker, Dispatcher, Admin, Analyst.</sub></td>
+    <td width="50%"><img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/03-capabilities.png" alt="13 capabilities clearly labelled"/><br/><sub><b>13 capabilities</b>, each labelled LIVE, PILOT SETUP or DEMO ONLY.</sub></td>
+    <td width="50%"><img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/04-demo-roles.png" alt="Demo roles"/><br/><sub><b>Demo roles:</b> Resident, Worker, Dispatcher, Admin, Analyst.</sub></td>
   </tr>
 </table>
 
 <div align="center">
-<img src="./screenshots/05-trust-privacy.png" alt="Trust, privacy, human in the loop" width="100%"/>
+<img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/05-trust-privacy.png" alt="Trust, privacy, human in the loop" width="100%"/>
 <br/><sub><b>Trust, privacy, human in the loop</b></sub>
 </div>
 
-<img src="./assets/divider.svg" width="100%" alt=""/>
+<img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/divider.svg" width="100%" alt=""/>
 
 ## How it works
 
-<img src="./assets/ai-review.svg" alt="AI suggests a category, a person reviews it, and the report is saved" width="100%"/>
+<img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/ai-review.svg" alt="AI suggests a category, a person reviews it, and the report is saved" width="100%"/>
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'primaryColor':'#0f1a16','primaryTextColor':'#e7efeb','primaryBorderColor':'#5df0a8','lineColor':'#5df0a8','actorBkg':'#0f1a16','actorTextColor':'#e7efeb','actorBorder':'#5df0a8','signalColor':'#5df0a8','noteBkgColor':'#13201b','noteTextColor':'#e7efeb'}}}%%
@@ -83,7 +83,7 @@ sequenceDiagram
 
 The same nine stops, visited in the original order and in an optimised order. The red stop is a high-priority case. Routes are recommendations and a **dispatcher approves** the final plan.
 
-<img src="./assets/route-demo.svg" alt="Animated comparison of original and optimised routes" width="100%"/>
+<img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/route-demo.svg" alt="Animated comparison of original and optimised routes" width="100%"/>
 
 Try the real interactive version on the [live demo](https://6cg9h4qr-5173.inc1.devtunnels.ms/) using the **Optimised / Original order** toggle. The engine is a **TypeScript VRP** with baselines, a validator and human approval. Demo actions never write to the live database.
 
@@ -102,7 +102,7 @@ flowchart LR
     style G fill:#5df0a8,stroke:#07150f,color:#07150f
 ```
 
-<img src="./assets/divider.svg" width="100%" alt=""/>
+<img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/divider.svg" width="100%" alt=""/>
 
 ## Capabilities and status
 
@@ -134,7 +134,7 @@ Live account and resident-report integrations are kept separate from simulated o
 
 New signups are always residents. Admins promote roles later.
 
-<img src="./assets/divider.svg" width="100%" alt=""/>
+<img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/divider.svg" width="100%" alt=""/>
 
 ## Where the AI is, and where it is not
 
@@ -188,15 +188,15 @@ stateDiagram-v2
 
 ## Architecture
 
-<img src="./assets/architecture.svg" alt="Animated architecture diagram" width="100%"/>
+<img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/architecture.svg" alt="Animated architecture diagram" width="100%"/>
 
-<img src="./assets/divider.svg" width="100%" alt=""/>
+<img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/divider.svg" width="100%" alt=""/>
 
 ## Analytics
 
 Dashboards turn operational records into a clear current-state view: open and overdue requests, time to resolution, and recurring hotspots. Every metric needs a precise definition, and simulated figures are always labelled.
 
-<img src="./assets/dashboard.svg" alt="Dashboard preview with simulated data" width="100%"/>
+<img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/dashboard.svg" alt="Dashboard preview with simulated data" width="100%"/>
 
 ## Trust, privacy and human in the loop
 
@@ -235,13 +235,13 @@ Dashboards turn operational records into a clear current-state view: open and ov
 - **Operations:** median and 90th-percentile resolution time, on-time completion, repeat reports.
 - Results from synthetic data are labelled as simulation, never as real-world outcomes.
 
-<img src="./assets/divider.svg" width="100%" alt=""/>
+<img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/divider.svg" width="100%" alt=""/>
 
 ## Getting started
 
 ```bash
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <your-repo>
+git clone https://github.com/chethankp365/EcoBrain-AI.git
+cd EcoBrain-AI
 npm install
 cp .env.example .env   # add Supabase keys; keep the Gemini key server-side only
 npm run dev
@@ -252,10 +252,14 @@ Or try the hosted demo: **[EcoBrain AI live demo](https://6cg9h4qr-5173.inc1.dev
 ## Repository layout
 
 ```text
-├── assets/         animated SVGs used in this README
-├── screenshots/    project screenshots used in this README
-├── README.md
-└── ...             source code
+├── src/            web app source
+├── api/            server-side functions
+├── shared/         shared types and logic
+├── supabase/       database migrations
+├── tests/          automated tests
+├── docs/           documentation
+├── public/         static files
+└── README.md
 ```
 
 <div align="center">
