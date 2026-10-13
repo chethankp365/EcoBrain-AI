@@ -27,8 +27,8 @@
       "maxDuration": 60
     }
   },
-  "crons": [
-    { "path": "/api/cron/sensors", "schedule": "*/15 * * * *" },
-    { "path": "/api/cron/retention", "schedule": "0 3 * * *" }
-  ]
-}
+   {
+     "crons": [
+       { "path": "/api/something",    "schedule": "0 6 * * *" }
+     ]
+   }
