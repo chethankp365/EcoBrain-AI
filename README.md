@@ -40,9 +40,9 @@ Seeded records carry a `SIMULATED` label. Route and sustainability figures are e
 
 ## Production readiness
 
-Real mode now uses Supabase Auth for account creation, sign-in, recovery, refresh, and profile updates. Resident/worker reports, report photos, report history, and Gemini classifications use Supabase-backed storage. Dispatch, fleet, route planning, worker tracking, analytics, notifications, hotspots, and sensor ingestion are intentionally unavailable in real mode until those features are connected to real configured operational records; the API returns an explicit unavailable response instead of demo data.
+Real mode uses Supabase Auth for account creation, sign-in, recovery, refresh, and profile updates. Resident reports, report photos, report history, and Gemini classifications use Supabase-backed storage once the report-location and pilot-area migrations are applied. Dispatch, fleet, route planning, worker tracking, analytics, notifications, hotspots, and sensor ingestion remain demo-only until connected to real operational records; the real API returns an explicit unavailable response instead of demo data.
 
-Apply every migration in `supabase/migrations/` in filename order in the Supabase SQL Editor. This includes the PostgREST role grants, generated report coordinates, service-area validation, and the selected pilot boundary. Row-level security remains enabled.
+For a new Supabase project, apply every migration in `supabase/migrations/` in filename order. The configured project already has migrations `202610130001` and `202610130002`; apply only `202610130003_report_location_api.sql` and then `202610130004_seed_ramaswamy_palya_ward1.sql` in the Supabase SQL Editor. The latter configures the selected Greater Bengaluru Authority Ward 1 pilot area, Ramaswamy Palya. Row-level security remains enabled.
 
 Use `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` only for public client configuration. Keep the Supabase service-role/secret key under the server-only `SUPABASE_SERVICE_ROLE_KEY` name, and keep `GEMINI_API_KEY` server-side. Never use a `VITE_` prefix for a secret or commit `.env`.
 

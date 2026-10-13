@@ -1,8 +1,8 @@
 import { Bell, Menu, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { NavLink, Outlet, useNavigate, type NavLinkRenderProps } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate, type NavLinkRenderProps } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Button, Drawer, Logo, useToast } from '@/components/ui'
+import { Button, Drawer, GlassCard, Logo, useToast } from '@/components/ui'
 import { homeFor, useAuth } from '@/lib/auth'
 import { api } from '@/lib/api'
 import CommandPalette from '@/components/CommandPalette'
@@ -41,6 +41,7 @@ const LINKS: Record<string, { to: string; key: string }[]> = {
 
 export default function AppShell() {
   const { profile, loading, logout } = useAuth()
+  const location = useLocation()
   const nav = useNavigate()
   const { t, i18n } = useTranslation()
   const toast = useToast()
@@ -61,8 +62,8 @@ export default function AppShell() {
   }, [])
 
   useEffect(() => {
-    if (!loading && !profile) nav('/login')
-  }, [loading, profile, nav])
+    if (!loading && !profile) nav('/login', { replace: true, state: { from: location.pathname } })
+  }, [loading, profile, nav, location.pathname])
 
   useEffect(() => {
     if (!profile || !demoMode) return
@@ -151,7 +152,16 @@ export default function AppShell() {
               This account has no live operational modules enabled yet. Dispatch, fleet, routes, worker tracking, analytics, and sensor data are unavailable until real operational records are configured.
             </div>
           )}
-          <Outlet />
+          {!demoMode && !liveReady && profile.role === 'resident' && location.pathname === '/report' ? (
+            <GlassCard className="mx-auto mt-12 max-w-2xl p-8">
+              <p className="text-xs uppercase tracking-[0.2em] text-amber-200">Bengaluru pilot setup</p>
+              <h1 className="mt-3 font-instrument-serif text-3xl">Reports will be saved to the live database</h1>
+              <p className="mt-3 text-sm text-white/60">
+                The selected service area is Ramaswamy Palya Ward 1. Reporting will open after its verified boundary and location-validation migration are enabled.
+              </p>
+              <p className="mt-2 text-sm text-white/50">No sample report will be accepted or shown as real while setup is incomplete.</p>
+            </GlassCard>
+          ) : <Outlet />}
         </main>
         <nav className="flex justify-around border-t border-white/10 p-2 md:hidden">
           {links.slice(0, 4).map((l) => (

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Button, GlassCard, Input, Logo } from '@/components/ui'
 import { homeFor, useAuth } from '@/lib/auth'
 import { api, setToken } from '@/lib/api'
@@ -8,8 +8,15 @@ import type { UserRole } from '@shared/types'
 const VIDEO =
   'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260622_204103_f607742e-09da-4cf5-bb06-4e67b0a531de.mp4'
 
+function destinationFromState(state: unknown, fallback: string) {
+  if (!state || typeof state !== 'object' || !('from' in state)) return fallback
+  const { from } = state
+  return typeof from === 'string' && from.startsWith('/') && !from.startsWith('//') ? from : fallback
+}
+
 export function LoginPage() {
   const { login, demo } = useAuth()
+  const location = useLocation()
   const nav = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -24,7 +31,7 @@ export function LoginPage() {
     setErr('')
     try {
       const p = await fn()
-      nav(homeFor(p.role))
+      nav(destinationFromState(location.state, homeFor(p.role)), { replace: true })
     } catch (e) {
       setErr((e as Error).message)
     }
@@ -50,7 +57,7 @@ export function LoginPage() {
         </Button>
       </form>
       <p className="mt-4 text-sm text-white/50">
-        <Link to="/forgot-password" className="underline">
+        <Link to="/forgot-password" state={location.state} className="underline">
           Forgot password
         </Link>
       </p>
@@ -70,6 +77,7 @@ export function LoginPage() {
 
 export function SignupPage() {
   const { signup } = useAuth()
+  const location = useLocation()
   const nav = useNavigate()
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
@@ -89,7 +97,7 @@ export function SignupPage() {
         setErr('')
         void signup(email, password, displayName)
           .then((profile) => {
-            if (profile) nav(homeFor(profile.role))
+            if (profile) nav(destinationFromState(location.state, homeFor(profile.role)), { replace: true })
             else setMessage('Account created. Check your email to confirm your address, then sign in.')
           })
           .catch((error: Error) => setErr(error.message))
@@ -103,7 +111,7 @@ export function SignupPage() {
         <Button className="w-full" type="submit" disabled={busy}>{busy ? 'Creating…' : 'Create account'}</Button>
       </form>
       <p className="mt-4 text-sm">
-        Already have an account? <Link to="/login">Sign in</Link>
+        Already have an account? <Link to="/login" state={location.state}>Sign in</Link>
       </p>
     </Split>
   )

@@ -7,6 +7,7 @@ import { api } from '@/lib/api'
 
 const VIDEO =
   'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260622_204103_f607742e-09da-4cf5-bb06-4e67b0a531de.mp4'
+const PILOT_AREA = 'Ramaswamy Palya Ward 1, Bengaluru'
 
 const NAV = [
   { href: '#how', label: 'How it works' },
@@ -25,18 +26,17 @@ const STEPS = [
   'Verify',
   'Learn and report',
 ]
-const TICKER_ITEMS = ['12 open requests', '2 vehicles on shift', '1 urgent near hospital', 'OSRM travel times']
 const LIVE_STEPS = ['Create an account', 'Report a collection issue', 'Review the AI suggestion', 'Track the saved report']
 const LIVE_FEATURES = [
-  ['Supabase accounts', 'Email-confirmed sign-up, authenticated sessions, and role-aware profiles.'],
-  ['Persistent resident reports', 'Reports and private photos are stored in Supabase, with access checks on the API.'],
-  ['AI classification', 'Gemini runs server-side when configured; confidence, model version, and fallback are recorded.'],
+  ['Accounts and RBAC', 'Supabase sign-up, authenticated sessions, and role-aware profiles.'],
+  ['Reporting', 'Resident reports and private photos are saved in Supabase with access checks.'],
+  ['AI image classification', 'Gemini suggestions and review details are saved with each report.'],
 ]
 
 const FEATURES = [
-  ['Accounts and RBAC', 'Five roles, server-enforced permissions, audited role changes.'],
-  ['Reporting', 'Mobile-first wizard with map, photo, voice and drafts.'],
-  ['AI image classification', 'Gemini vision with confidence, review and keyword fallback.'],
+  ['Accounts and RBAC', 'Live resident sign-up, sign-in and profiles. Staff role provisioning is not enabled.'],
+  ['Reporting', 'Resident reports, private photos and report history are stored in Supabase for the configured pilot area.'],
+  ['AI image classification', 'Gemini suggestions are generated server-side and saved for human review.'],
   ['Priority + duplicates', 'Transparent scores. Nearby matches suggested, never silently dropped.'],
   ['Smart scheduling', 'Shift planner that ranks work by deadline, age and capacity.'],
   ['Route optimisation', 'TypeScript VRP with baselines, validator and human approval.'],
@@ -89,8 +89,22 @@ export default function Landing() {
       })
       .join(' ')
   }, [optimised, vehicles, urgent])
-  const liveFeatures = LIVE_FEATURES.filter(([title]) => title !== 'AI classification' || geminiConfigured)
   const liveReady = supabaseReady && serviceAreas.length > 0
+  const featureStatus = (title: string) => {
+    const isLiveFeature = LIVE_FEATURES.some(([name]) => name === title)
+    if (!isLiveFeature) return { label: 'DEMO ONLY', tone: 'sim' as const }
+    if (title === 'Accounts and RBAC') {
+      return supabaseReady
+        ? { label: 'LIVE', tone: 'ai' as const }
+        : { label: 'SETUP REQUIRED', tone: 'medium' as const }
+    }
+    if (title === 'AI image classification' && !geminiConfigured) {
+      return { label: 'SETUP REQUIRED', tone: 'medium' as const }
+    }
+    return liveReady
+      ? { label: 'LIVE PILOT', tone: 'ai' as const }
+      : { label: 'PILOT SETUP', tone: 'medium' as const }
+  }
 
   return (
     <div className="bg-[#07090A] text-white">
@@ -109,7 +123,7 @@ export default function Landing() {
           <nav className="flex items-center justify-between px-6 py-5 md:px-12 md:py-6 lg:px-16">
             <Logo />
             <div className="hidden items-center gap-8 md:flex">
-              {(demoMode ? NAV : NAV.filter((n) => n.href === '#how' || n.href === '#features')).map((n) => (
+              {NAV.map((n) => (
                 <a key={n.href} href={n.href} className="text-sm font-light text-white/80 transition-colors duration-200 hover:text-white">
                   {n.label}
                 </a>
@@ -141,7 +155,7 @@ export default function Landing() {
                   </button>
                 </div>
                 <div className="flex flex-1 flex-col items-center justify-center">
-                  {[...(demoMode ? NAV : NAV.filter((n) => n.href === '#how' || n.href === '#features')), { href: '/login', label: 'Sign in' }].map((n, i) => (
+                  {[...NAV, { href: '/login', label: 'Sign in' }].map((n, i) => (
                     <motion.a
                       key={n.label}
                       href={n.href}
@@ -174,46 +188,33 @@ export default function Landing() {
             </h1>
             <p className="mt-4 max-w-md text-sm font-light leading-relaxed text-white/70 md:mt-5 md:text-base">
               <span className="block">Report it. Prioritise it. Route it.</span>
-              {demoMode
-                ? 'AI-assisted waste collection that teams and residents love.'
-                : liveReady
-                  ? 'Resident reporting backed by Supabase, with server-side AI classification.'
-                  : 'The live pilot is being configured. Sign up to access the resident reporting service when the service area is ready.'}
+              {liveReady
+                ? 'AI-assisted waste collection with real reports stored for the Bengaluru pilot.'
+                : 'AI-assisted waste collection, with a real resident-reporting pilot being set up in Bengaluru.'}
             </p>
             <div className="mt-5 flex flex-col items-center gap-4 sm:flex-row md:mt-6">
-              {demoMode || liveReady ? (
-                <Magnetic>
-                  <Link to={demoMode ? '/report' : '/login'}>
-                    <Button className="group">
-                      {demoMode ? 'Report an Issue' : 'Sign in to report'}
-                      <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-                    </Button>
-                  </Link>
-                </Magnetic>
-              ) : (
-                <Button disabled>Service area setup in progress</Button>
-              )}
-              {demoMode && <a href="#demo">
+              <Magnetic>
+                <Link to="/report">
+                  <Button className="group">
+                    Report an Issue
+                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                  </Button>
+                </Link>
+              </Magnetic>
+              <a href="#demo">
                 <Button variant="secondary">
                   <Play className="h-4 w-4" /> Watch Demo
                 </Button>
-              </a>}
+              </a>
             </div>
           </div>
 
           <div className="relative z-10 mb-6 flex justify-center px-4">
             <div className="glass flex max-w-3xl items-center gap-6 overflow-hidden px-5 py-3 text-xs text-white/70">
-              {demoMode ? (
-                <>
-                  <Badge tone="sim">SIMULATED</Badge>
-                  <Ticker />
-                </>
-              ) : (
-                <>
-                  <Badge>{liveReady ? 'LIVE PILOT' : 'SETUP'}</Badge>
-                  <span className="whitespace-nowrap">{serviceAreas.join(' · ') || 'Service area not configured'}</span>
-                </>
-              )}
+              <Badge tone="sim">SIMULATED</Badge>
+              {liveReady
+                ? <span className="whitespace-nowrap">{serviceAreas.join(' · ')} · Live reports are stored separately</span>
+                : <span className="whitespace-nowrap">Demo scenario only · Selected pilot: {PILOT_AREA} · Setup in progress</span>}
             </div>
           </div>
           <div className="mb-8 flex justify-center text-[11px] tracking-[0.3em] text-white/40">SCROLL</div>
@@ -236,8 +237,8 @@ export default function Landing() {
       </section> : <section id="impact" className="mx-auto max-w-6xl px-6 py-16">
         <GlassCard className="p-6">
           <p className="text-xs uppercase tracking-[0.2em] text-white/40">Pilot status</p>
-          <p className="mt-3 font-instrument-serif text-3xl">{serviceAreas.join(', ') || 'Service area not configured'}</p>
-          <p className="mt-2 text-sm text-white/50">No service-volume or sustainability metrics are shown until real operational data exists.</p>
+          <p className="mt-3 font-instrument-serif text-3xl">{serviceAreas.join(', ') || `${PILOT_AREA} · boundary setup pending`}</p>
+          <p className="mt-2 text-sm text-white/50">The selected pilot boundary is based on the Greater Bengaluru Authority 2025 Ward 1 dataset. No service-volume or sustainability metrics are shown until real operational data exists.</p>
         </GlassCard>
       </section>}
 
@@ -254,11 +255,11 @@ export default function Landing() {
         </div>
       </section>
 
-      {demoMode && <section id="demo" className="mx-auto max-w-6xl px-6 py-20">
+      <section id="demo" className="mx-auto max-w-6xl px-6 py-20">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="font-instrument-serif text-4xl md:text-6xl">Interactive route demo</h2>
-            <p className="mt-2 text-sm text-white/50">Illustrative demo — not live traffic.</p>
+            <p className="mt-2 text-sm text-white/50">Simulated scenario only. Demo actions never write to the live database.</p>
           </div>
           <div className="flex gap-2">
             <Button variant={optimised ? 'primary' : 'secondary'} onClick={() => setOptimised(true)}>
@@ -297,18 +298,25 @@ export default function Landing() {
             <span className="text-white/40">Click a stop to mark urgent</span>
           </div>
         </GlassCard>
-      </section>}
+      </section>
 
       <section id="features" className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="font-instrument-serif text-4xl md:text-6xl">{demoMode ? 'Thirteen capabilities' : 'Available live features'}</h2>
+        <h2 className="font-instrument-serif text-4xl md:text-6xl">13 capabilities, clearly labelled</h2>
+        <p className="mt-3 max-w-3xl text-sm text-white/55">Live account and resident-report integrations are distinct from simulated operational demos. Demo-only features never create live records.</p>
         <div className="mt-10 grid gap-4 md:grid-cols-3">
-          {(demoMode ? FEATURES : liveFeatures).map(([t, d]) => (
-            <GlassCard key={t} className="p-6 transition hover:border-[#6EE7A8]/40 hover:shadow-[0_0_40px_rgba(110,231,168,.12)]">
-              <Sparkles className="mb-3 h-4 w-4 text-[#6EE7A8]" />
-              <h3 className="font-medium">{t}</h3>
-              <p className="mt-2 text-sm text-white/55">{d}</p>
-            </GlassCard>
-          ))}
+          {FEATURES.map(([t, d]) => {
+            const status = featureStatus(t)
+            return (
+              <GlassCard key={t} className="p-6 transition hover:border-[#6EE7A8]/40 hover:shadow-[0_0_40px_rgba(110,231,168,.12)]">
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <Sparkles className="h-4 w-4 text-[#6EE7A8]" />
+                  <Badge tone={status.tone}>{status.label}</Badge>
+                </div>
+                <h3 className="font-medium">{t}</h3>
+                <p className="mt-2 text-sm text-white/55">{d}</p>
+              </GlassCard>
+            )
+          })}
         </div>
       </section>
 
@@ -329,7 +337,7 @@ export default function Landing() {
         </div>
       </section>}
 
-      {demoMode && <Roles />}
+      <Roles />
 
       <section className="mx-auto max-w-6xl px-6 py-20">
         <GlassCard className="p-8 md:p-12">
@@ -363,20 +371,11 @@ export default function Landing() {
             {demoMode && <Link to="/evaluation">Evaluation</Link>}
             <a href="#features">Features</a>
           </div>
-          <span>© 2026 EcoBrain AI{demoMode ? ' · simulated demo data labelled as such' : ' · live pilot'}</span>
+          <span>© 2026 EcoBrain AI{demoMode ? ' · simulated demo data labelled as such' : ' · Bengaluru resident pilot'}</span>
         </div>
       </footer>
     </div>
   )
-}
-
-function Ticker() {
-  const [i, setI] = useState(0)
-  useEffect(() => {
-    const t = setInterval(() => setI((x) => (x + 1) % TICKER_ITEMS.length), 2200)
-    return () => clearInterval(t)
-  }, [])
-  return <span className="whitespace-nowrap">{TICKER_ITEMS[i]}</span>
 }
 
 function Roles() {
@@ -390,7 +389,8 @@ function Roles() {
   }
   return (
     <section id="roles" className="mx-auto max-w-6xl px-6 py-20">
-      <h2 className="font-instrument-serif text-4xl md:text-6xl">Built for every seat</h2>
+      <h2 className="font-instrument-serif text-4xl md:text-6xl">Explore the demo roles</h2>
+      <p className="mt-3 text-sm text-white/55">These role previews are illustrative; only resident account and report flows are connected to live data.</p>
       <div className="mt-8 flex flex-wrap gap-2">
         {Object.keys(copy).map((r) => (
           <button key={r} onClick={() => setRole(r)} className={`min-h-[44px] rounded-full px-4 ${role === r ? 'bg-white text-black' : 'border border-white/20'}`}>

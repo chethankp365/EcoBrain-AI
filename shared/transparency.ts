@@ -8,17 +8,17 @@ export type TransparencyFeature = {
 }
 
 export const TRANSPARENCY_FEATURES: TransparencyFeature[] = [
-  { area: 'Accounts and access', feature: 'Role-based demo sessions and server role checks', status: 'implemented', evidence: 'Demo API authentication and role middleware' },
-  { area: 'Accounts and access', feature: 'Persistent Supabase Auth and row-level security', status: 'future', evidence: 'Requires Supabase migrations and project credentials' },
-  { area: 'Resident reporting', feature: 'Report creation, tracking, feedback, and reopen flow', status: 'implemented', evidence: 'Report API and resident pages' },
-  { area: 'AI classification', feature: 'Gemini suggestion with deterministic fallback', status: 'partial', evidence: 'Server classifier; accuracy has not been evaluated' },
-  { area: 'Priority and duplicates', feature: 'Rule-based priority factors and duplicate suggestions', status: 'implemented', evidence: 'Shared scoring and duplicate modules' },
-  { area: 'Dispatch and routes', feature: 'Vehicle route recommendation and baselines', status: 'implemented', evidence: 'TypeScript VRP solver; dispatcher approval required' },
+  { area: 'Accounts and access', feature: 'Supabase Auth, resident profiles, and server-side session checks', status: 'implemented', evidence: 'Live Supabase sign-up, sign-in, refresh, recovery, and profile reads' },
+  { area: 'Accounts and access', feature: 'Staff role provisioning and administration', status: 'future', evidence: 'New accounts are residents; staff operations are not enabled in live mode' },
+  { area: 'Resident reporting', feature: 'Report creation, private photos, and status history', status: 'implemented', evidence: 'Live reports are persisted in Supabase within the configured pilot boundary' },
+  { area: 'AI classification', feature: 'Gemini suggestion saved for human review', status: 'partial', evidence: 'Server-side classification is persisted; accuracy has not been evaluated' },
+  { area: 'Priority and duplicates', feature: 'Rule-based priority factors and duplicate suggestions', status: 'partial', evidence: 'Applied during live report creation; sensitivity datasets are not configured' },
+  { area: 'Dispatch and routes', feature: 'Vehicle route recommendation and baselines', status: 'simulated', evidence: 'Demo-only VRP solver; live dispatch is disabled until real fleet data is configured' },
   { area: 'Worker experience', feature: 'Worker route actions and offline action queue', status: 'partial', evidence: 'Browser IndexedDB queue; device-level sync is not yet verified' },
-  { area: 'Notifications', feature: 'In-app notifications in the demo store', status: 'simulated', evidence: 'In-memory notifications; no realtime transport configured' },
+  { area: 'Notifications', feature: 'In-app and email notification delivery', status: 'simulated', evidence: 'Demo-only in-memory notifications; no live delivery transport configured' },
   { area: 'Analytics', feature: 'Seeded historical KPIs and forecast examples', status: 'simulated', evidence: 'Synthetic history; not operational measurements' },
   { area: 'Sustainability', feature: 'Fuel and emissions calculations', status: 'simulated', evidence: 'Estimates use configurable assumptions, not measured fleet data' },
   { area: 'Smart bins', feature: 'Bin readings and predicted overflow examples', status: 'simulated', evidence: 'Synthetic sensor readings; no physical devices connected' },
-  { area: 'Audit', feature: 'In-memory audit events and read-only viewer', status: 'partial', evidence: 'Demo events are not durable across server restarts' },
-  { area: 'Deployment', feature: 'Supabase-backed persistence and production deployment', status: 'future', evidence: 'Requires Supabase project setup and production environment variables' },
+  { area: 'Audit', feature: 'Persistent operational audit trail', status: 'simulated', evidence: 'Live report status history is persisted; administrative audit features remain demo-only' },
+  { area: 'Deployment', feature: 'Supabase-backed pilot and public production hosting', status: 'partial', evidence: 'Supabase is configured for local development; public app hosting is not deployed' },
 ]
