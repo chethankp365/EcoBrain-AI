@@ -1,10 +1,10 @@
-<div align="center">
+**<div align="center">
 
 <img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/hero.svg" alt="EcoBrain AI" width="100%"/>
 
 <br/>
 
-[![Live demo](https://img.shields.io/badge/LIVE_DEMO-Open_EcoBrain_AI-5df0a8?style=for-the-badge&labelColor=07150f)](https://6cg9h4qr-5173.inc1.devtunnels.ms/)
+[![Live demo](https://img.shields.io/badge/LIVE_DEMO-Open_EcoBrain_AI-5df0a8?style=for-the-badge&labelColor=07150f)](https://eco-brain-ai.vercel.app/)
 [![Pilot](https://img.shields.io/badge/PILOT-Bengaluru-2f81f7?style=for-the-badge&labelColor=07150f)](#bengaluru-pilot)
 [![Status](https://img.shields.io/badge/STATUS-Setup_in_progress-f5a623?style=for-the-badge&labelColor=07150f)](#capabilities-and-status)
 
@@ -85,7 +85,7 @@ The same nine stops, visited in the original order and in an optimised order. Th
 
 <img src="https://raw.githubusercontent.com/chethankp365/EcoBrain-AI/main/route-demo.svg" alt="Animated comparison of original and optimised routes" width="100%"/>
 
-Try the real interactive version on the [live demo](https://6cg9h4qr-5173.inc1.devtunnels.ms/) using the **Optimised / Original order** toggle. The engine is a **TypeScript VRP** with baselines, a validator and human approval. Demo actions never write to the live database.
+Try the real interactive version on the [live demo](https://eco-brain-ai.vercel.app/) using the **Optimised / Original order** toggle. The engine is a **TypeScript VRP** with baselines, a validator and human approval. Demo actions never write to the live database.
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'primaryColor':'#0f1a16','primaryTextColor':'#e7efeb','primaryBorderColor':'#5df0a8','lineColor':'#5df0a8','tertiaryColor':'#0b1210'}}}%%
@@ -120,7 +120,7 @@ Live account and resident-report integrations are kept separate from simulated o
 | **Supervisor dashboard** | Live queue, map, exceptions and assignment. | ![demo](https://img.shields.io/badge/DEMO_ONLY-6b7280?style=flat-square&labelColor=07150f) |
 | **Maps and hotspots** | Clusters, heat and recurring polygons, privacy-aware. | ![demo](https://img.shields.io/badge/DEMO_ONLY-6b7280?style=flat-square&labelColor=07150f) |
 
-<sub>Four more capabilities are listed on the <a href="https://6cg9h4qr-5173.inc1.devtunnels.ms/">live site</a>.</sub>
+<sub>Four more capabilities are listed on the <a href="https://eco-brain-ai.vercel.app/">live site</a>.</sub>
 
 ## Roles
 
@@ -247,7 +247,7 @@ cp .env.example .env   # add Supabase keys; keep the Gemini key server-side only
 npm run dev
 ```
 
-Or try the hosted demo: **[EcoBrain AI live demo](https://6cg9h4qr-5173.inc1.devtunnels.ms/)**
+Or try the hosted demo: **[EcoBrain AI live demo](https://eco-brain-ai.vercel.app/)**
 
 ## Repository layout
 
@@ -266,8 +266,8 @@ Or try the hosted demo: **[EcoBrain AI live demo](https://6cg9h4qr-5173.inc1.dev
 
 <br/>
 
-[![Get started](https://img.shields.io/badge/GET_STARTED-Open_the_live_demo-5df0a8?style=for-the-badge&labelColor=07150f)](https://6cg9h4qr-5173.inc1.devtunnels.ms/)
+[![Get started](https://img.shields.io/badge/GET_STARTED-Open_the_live_demo-5df0a8?style=for-the-badge&labelColor=07150f)](https://eco-brain-ai.vercel.app/)
 
 <sub>© 2026 EcoBrain AI · Bengaluru resident pilot</sub>
 
-</div>
+</div>**
