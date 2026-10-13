@@ -27,8 +27,11 @@
       "maxDuration": 60
     }
   },
-   {
-     "crons": [
-       { "path": "/api/something",    "schedule": "0 6 * * *" }
-     ]
-   }
+     {
+  "crons": [
+    {
+      "path": "/api/your-endpoint",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}
