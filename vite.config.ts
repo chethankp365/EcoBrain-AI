@@ -42,6 +42,8 @@ function honoApi(): PluginOption {
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
+  if (env.VITE_SUPABASE_URL) process.env.SUPABASE_URL ??= env.VITE_SUPABASE_URL
+  if (env.VITE_SUPABASE_ANON_KEY) process.env.SUPABASE_ANON_KEY ??= env.VITE_SUPABASE_ANON_KEY
   for (const [k, v] of Object.entries(env)) {
     if (!k.startsWith('VITE_')) process.env[k] = v
   }
