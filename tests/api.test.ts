@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { app } from '../api/app'
 import { signDemo } from '../api/_lib/auth'
 import { store } from '../api/_lib/store'
@@ -10,6 +10,7 @@ let originalPlans: RoutePlan[]
 let eventCount = 0
 
 beforeEach(() => {
+  vi.stubEnv('DEMO_MODE', 'true')
   originalReport = { ...report }
   originalPlans = [...store.plans]
   eventCount = store.events.length
@@ -20,6 +21,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  vi.unstubAllEnvs()
   Object.assign(report, originalReport)
   store.plans = originalPlans
   store.events.splice(eventCount)

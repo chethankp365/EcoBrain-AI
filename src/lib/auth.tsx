@@ -1,13 +1,13 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { Profile, UserRole } from '@shared/types'
-import { api, getToken, setToken } from './api'
+import { api, getToken, setSession, setToken } from './api'
 
 type Auth = {
   profile: Profile | null
   loading: boolean
   login: (email: string, password: string) => Promise<Profile>
-  signup: (email: string, password: string, displayName: string) => Promise<Profile>
-  logout: () => void
+  signup: (email: string, password: string, displayName: string) => Promise<Profile | null>
+  logout: () => Promise<void>
   demo: (role: UserRole) => Promise<Profile>
 }
 
@@ -41,26 +41,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       profile,
       loading,
       async login(email, password) {
-        const r = await api<{ token: string; profile: Profile }>('/auth/login', {
+        const r = await api<{ token: string; refreshToken?: string; profile: Profile }>('/auth/login', {
           method: 'POST',
           body: JSON.stringify({ email, password }),
         })
-        setToken(r.token)
+        setSession(r.token, r.refreshToken)
         setProfile(r.profile)
         return r.profile
       },
       async signup(email, password, displayName) {
-        const r = await api<{ token: string; profile: Profile }>('/auth/signup', {
+        const r = await api<{ token?: string; refreshToken?: string; profile?: Profile; requiresEmailConfirmation?: boolean }>('/auth/signup', {
           method: 'POST',
           body: JSON.stringify({ email, password, displayName }),
         })
-        setToken(r.token)
+        if (!r.token || !r.profile) return null
+        setSession(r.token, r.refreshToken)
         setProfile(r.profile)
         return r.profile
       },
-      logout() {
-        setToken(null)
-        setProfile(null)
+      async logout() {
+        try {
+          if (getToken()) await api('/auth/logout', { method: 'POST' })
+        } finally {
+          setToken(null)
+          setProfile(null)
+        }
       },
       async demo(role) {
         const r = await api<{ token: string; profile: Profile }>('/auth/login', {

@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { HTTPException } from 'hono/http-exception'
 import { cors } from 'hono/cors'
 import { z } from 'zod'
 import { CATEGORIES, type Category, type Profile, type ReportStatus, type UserRole } from '../shared/types'
@@ -9,11 +10,13 @@ import { estimatedFuelAndCo2e, mean, percentile, seasonalNaiveForecast } from '.
 import { SOLVER_VERSION, solveVrp, validateSolution, type SolverStop } from '../shared/solver'
 import { authMiddleware, demoLogin, requireRole } from './_lib/auth'
 import { classifyReport } from './_lib/classify'
-import { env } from './_lib/env'
+import { env, usingSupabase } from './_lib/env'
 import { apiError, errorBody } from './_lib/errors'
 import { pointInPolygon } from './_lib/geo'
+import { classifyLiveReport, createLiveReport, getLiveReport, listLiveReports } from './_lib/liveReports'
 import { travelMatrix } from './_lib/routing'
 import { store } from './_lib/store'
+import { profileFromRow, supabaseAdmin, supabaseAuth, supabaseProfileForToken } from './_lib/supabase'
 
 type Vars = { profile: Profile }
 
@@ -32,30 +35,93 @@ function rateLimit(key: string, limit: number, windowMs = 60_000) {
 }
 
 app.use('*', cors({ origin: env().origin, credentials: true }))
-app.use('*', async (c, next) => {
-  try {
-    await next()
-  } catch (err) {
-    const body = errorBody(err)
-    const status = err && typeof err === 'object' && 'status' in err ? Number((err as { status: number }).status) : 500
-    return c.json(body, status as never)
-  }
+app.onError((err, c) => {
+  const status = err instanceof HTTPException ? err.status : 500
+  return c.json(errorBody(err), status as never)
 })
 app.use('*', authMiddleware)
+app.use('*', async (c, next) => {
+  if (env().demoMode || c.req.method === 'OPTIONS') return next()
+  const path = new URL(c.req.url).pathname
+  const method = c.req.method
+  const supported =
+    (method === 'GET' && path === '/api/health') ||
+    (method === 'POST' && ['/api/auth/login', '/api/auth/signup', '/api/auth/forgot', '/api/auth/refresh', '/api/auth/password', '/api/auth/logout'].includes(path)) ||
+    ((method === 'GET' || method === 'PATCH') && path === '/api/me') ||
+    ((method === 'GET' || method === 'POST') && path === '/api/reports') ||
+    (method === 'GET' && /^\/api\/reports\/[0-9a-f-]{36}$/i.test(path)) ||
+    (method === 'POST' && /^\/api\/reports\/[0-9a-f-]{36}\/classify$/i.test(path))
+  if (!supported) {
+    throw apiError(503, 'feature_not_configured', 'This operational feature is not connected to live data yet')
+  }
+  return next()
+})
 
-app.get('/health', (c) => c.json({ ok: true, demoMode: env().demoMode, solver: SOLVER_VERSION }))
+app.get('/health', async (c) => {
+  const config = env()
+  let supabaseReady = false
+  let serviceAreas: string[] = []
+  if (!config.demoMode && usingSupabase()) {
+    const { data, error } = await supabaseAdmin()
+      .from('service_areas')
+      .select('name')
+      .eq('is_active', true)
+      .order('created_at')
+      .limit(20)
+    supabaseReady = !error
+    serviceAreas = (data ?? []).map((area) => area.name)
+  }
+  return c.json({
+    ok: true,
+    demoMode: config.demoMode,
+    databaseMode: config.demoMode ? 'memory' : 'supabase',
+    supabaseReady,
+    serviceAreas,
+    geminiConfigured: Boolean(config.geminiKey),
+    liveFeatures: config.demoMode ? [] : ['auth', 'reports', 'ai_classification'],
+    solver: SOLVER_VERSION,
+  })
+})
 
 app.post('/auth/login', async (c) => {
   rateLimit(c.req.header('x-forwarded-for') || 'login', 20)
   const body = z.object({ email: z.string().email(), password: z.string().min(1) }).parse(await c.req.json())
+  if (!env().demoMode) {
+    const { data, error } = await supabaseAuth().auth.signInWithPassword(body)
+    if (error || !data.session) throw apiError(401, 'invalid_credentials', 'Email or password is incorrect')
+    const profile = await supabaseProfileForToken(data.session.access_token)
+    return c.json({ token: data.session.access_token, refreshToken: data.session.refresh_token, profile })
+  }
   return c.json(demoLogin(body.email, body.password))
+})
+
+app.post('/auth/refresh', async (c) => {
+  if (env().demoMode) throw apiError(404, 'not_found', 'Session refresh is unavailable in demo mode')
+  rateLimit(c.req.header('x-forwarded-for') || 'refresh', 30)
+  const body = z.object({ refreshToken: z.string().min(1) }).parse(await c.req.json())
+  const { data, error } = await supabaseAuth().auth.refreshSession({ refresh_token: body.refreshToken })
+  if (error || !data.session) throw apiError(401, 'session_expired', 'Session expired; please sign in again')
+  const profile = await supabaseProfileForToken(data.session.access_token)
+  return c.json({ token: data.session.access_token, refreshToken: data.session.refresh_token, profile })
 })
 
 app.post('/auth/signup', async (c) => {
   const body = z
     .object({ email: z.string().trim().email().max(254), password: z.string().min(10).max(128), displayName: z.string().trim().min(2).max(80) })
     .parse(await c.req.json())
-  if (!env().demoMode) throw apiError(503, 'auth_unavailable', 'Configure Supabase Auth before disabling demo mode')
+  if (!env().demoMode) {
+    const { data, error } = await supabaseAuth().auth.signUp({
+      email: body.email,
+      password: body.password,
+      options: { data: { display_name: body.displayName } },
+    })
+    if (error) throw apiError(error.status === 400 ? 409 : 502, 'signup_failed', 'Could not create your Supabase account')
+    if (!data.session) {
+      return c.json({ requiresEmailConfirmation: true }, 202)
+    }
+    const profile = await supabaseProfileForToken(data.session.access_token)
+    return c.json({ token: data.session.access_token, refreshToken: data.session.refresh_token, profile }, 201)
+  }
   const email = body.email.toLowerCase()
   if (store.profiles.some((p) => p.email.toLowerCase() === email)) throw apiError(409, 'exists', 'Email already registered')
   const profile: Profile = {
@@ -75,8 +141,34 @@ app.post('/auth/signup', async (c) => {
 })
 
 app.post('/auth/forgot', async (c) => {
-  z.object({ email: z.string().email() }).parse(await c.req.json())
+  const body = z.object({ email: z.string().email() }).parse(await c.req.json())
+  if (!env().demoMode) {
+    const { error } = await supabaseAuth().auth.resetPasswordForEmail(body.email, {
+      redirectTo: `${env().origin}/reset-password`,
+    })
+    if (error) throw apiError(502, 'reset_email_failed', 'Could not request a password reset')
+    return c.json({ ok: true, message: 'If the account exists, a password reset link has been sent.' })
+  }
   return c.json({ ok: true, message: 'If the account exists, a reset link would be emailed.' })
+})
+
+app.post('/auth/password', async (c) => {
+  if (env().demoMode) throw apiError(404, 'not_found', 'Password reset is unavailable in demo mode')
+  const body = z.object({ password: z.string().min(10).max(128) }).parse(await c.req.json())
+  const { error } = await supabaseAdmin().auth.admin.updateUserById(c.get('profile').id, { password: body.password })
+  if (error) throw apiError(502, 'password_update_failed', 'Could not update the password')
+  return c.json({ ok: true })
+})
+
+app.post('/auth/logout', async (c) => {
+  const token = (c.req.header('authorization') || '').replace(/^Bearer\s+/i, '')
+  if (env().demoMode) {
+    store.sessions = store.sessions.filter((session) => session.token !== token)
+    return c.json({ ok: true })
+  }
+  const { error } = await supabaseAdmin().auth.admin.signOut(token, 'local')
+  if (error) throw apiError(502, 'logout_failed', 'Could not revoke the Supabase session')
+  return c.json({ ok: true })
 })
 
 app.get('/me', (c) => c.json(c.get('profile')))
@@ -89,6 +181,22 @@ app.patch('/me', async (c) => {
     })
     .parse(await c.req.json())
   const p = c.get('profile')
+  if (!env().demoMode) {
+    const update: Record<string, unknown> = {}
+    if (body.language) update.language = body.language
+    if (body.notificationPrefs) update.notification_prefs = body.notificationPrefs
+    if (Object.keys(update).length) {
+      const { data, error } = await supabaseAdmin()
+        .from('profiles')
+        .update(update)
+        .eq('id', p.id)
+        .select('id, role, status, display_name, language, phone, notification_prefs, created_at')
+        .single()
+      if (error) throw apiError(503, 'profile_update_failed', 'Could not save profile settings')
+      return c.json(profileFromRow(data, p.email))
+    }
+    return c.json(p)
+  }
   if (body.language) p.language = body.language
   if (body.notificationPrefs) p.notificationPrefs = body.notificationPrefs
   return c.json(p)
@@ -110,6 +218,11 @@ app.post('/reports', async (c) => {
   const me = c.get('profile')
   rateLimit(me.id + ':reports', 30)
   const body = reportInput.parse(await c.req.json())
+  if (!env().demoMode) {
+    const result = await createLiveReport({ profile: me, ...body })
+    if ('possibleDuplicates' in result) return c.json(result, 409)
+    return c.json(result, 201)
+  }
   if (!pointInPolygon(body.lat, body.lng, store.areas[0].polygon)) {
     throw apiError(422, 'out_of_area', 'This location is outside Greenfield Ward.')
   }
@@ -161,11 +274,24 @@ app.post('/reports', async (c) => {
   return c.json({ report, duplicates: dups }, 201)
 })
 
-app.get('/reports', (c) => {
+app.get('/reports', async (c) => {
   const me = c.get('profile')
   const url = new URL(c.req.url)
   const page = Number(url.searchParams.get('page') || 1)
   const limit = Math.min(50, Number(url.searchParams.get('limit') || 20))
+  if (!env().demoMode) {
+    if (!Number.isSafeInteger(page) || page < 1 || !Number.isSafeInteger(limit) || limit < 1) {
+      throw apiError(422, 'invalid_pagination', 'Page and limit must be positive whole numbers')
+    }
+    return c.json(await listLiveReports({
+      profile: me,
+      page,
+      limit,
+      status: url.searchParams.get('status') || undefined,
+      category: url.searchParams.get('category') || undefined,
+      q: url.searchParams.get('q') || undefined,
+    }))
+  }
   let rows = [...store.reports]
   if (me.role === 'resident') rows = rows.filter((r) => r.reporterId === me.id)
   if (me.role === 'worker') {
@@ -186,8 +312,9 @@ app.get('/reports', (c) => {
   return c.json({ data, page, limit, total })
 })
 
-app.get('/reports/:id', (c) => {
+app.get('/reports/:id', async (c) => {
   const me = c.get('profile')
+  if (!env().demoMode) return c.json(await getLiveReport(c.req.param('id'), me))
   const r = store.reports.find((x) => x.id === c.req.param('id'))
   if (!r) throw apiError(404, 'not_found', 'Report not found')
   assertReportAccess(r, me)
@@ -224,6 +351,7 @@ app.patch('/reports/:id/status', async (c) => {
 app.post('/reports/:id/classify', async (c) => {
   const me = c.get('profile')
   rateLimit(me.id + ':classify', 20)
+  if (!env().demoMode) return c.json(await classifyLiveReport(c.req.param('id'), me))
   const r = mustReport(c.req.param('id'))
   assertReportAccess(r, me)
   const photo = r.photoPath ? store.photos.get(r.photoPath)?.bytes : undefined

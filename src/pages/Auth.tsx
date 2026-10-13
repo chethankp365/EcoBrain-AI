@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button, GlassCard, Input, Logo } from '@/components/ui'
 import { homeFor, useAuth } from '@/lib/auth'
-import { api } from '@/lib/api'
+import { api, setToken } from '@/lib/api'
 import type { UserRole } from '@shared/types'
 
 const VIDEO =
@@ -11,8 +11,8 @@ const VIDEO =
 export function LoginPage() {
   const { login, demo } = useAuth()
   const nav = useNavigate()
-  const [email, setEmail] = useState('resident@ecobrain.demo')
-  const [password, setPassword] = useState('EcoBrain!2026')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [err, setErr] = useState('')
   const [demoMode, setDemoMode] = useState(false)
 
@@ -34,7 +34,7 @@ export function LoginPage() {
     <Split>
       <Logo />
       <h1 className="mt-8 font-instrument-serif text-4xl">Sign in</h1>
-      <p className="mt-2 text-sm text-white/50">Non-production demo password is documented in the README.</p>
+      <p className="mt-2 text-sm text-white/50">{demoMode ? 'Sign in with your account or use a demo role below.' : 'Sign in with your EcoBrain account.'}</p>
       <form
         className="mt-8 space-y-4"
         onSubmit={(e) => {
@@ -75,6 +75,7 @@ export function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [err, setErr] = useState('')
+  const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
 
   return (
@@ -87,7 +88,10 @@ export function SignupPage() {
         setBusy(true)
         setErr('')
         void signup(email, password, displayName)
-          .then((profile) => nav(homeFor(profile.role)))
+          .then((profile) => {
+            if (profile) nav(homeFor(profile.role))
+            else setMessage('Account created. Check your email to confirm your address, then sign in.')
+          })
           .catch((error: Error) => setErr(error.message))
           .finally(() => setBusy(false))
       }}>
@@ -95,6 +99,7 @@ export function SignupPage() {
         <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" maxLength={254} required />
         <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password (10+ chars)" minLength={10} maxLength={128} required />
         {err && <p role="alert" className="text-sm text-red-300">{err}</p>}
+        {message && <p role="status" className="text-sm text-emerald-200">{message}</p>}
         <Button className="w-full" type="submit" disabled={busy}>{busy ? 'Creating…' : 'Create account'}</Button>
       </form>
       <p className="mt-4 text-sm">
@@ -121,9 +126,52 @@ export function ForgotPage() {
           .catch((error: Error) => setErr(error.message))
       }}>
         <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" required />
-        {message && <p role="status" className="text-sm text-white/60">{message} Password-reset email delivery is not configured in this demo.</p>}
+        {message && <p role="status" className="text-sm text-white/60">{message}</p>}
         {err && <p role="alert" className="text-sm text-red-300">{err}</p>}
         <Button className="w-full" type="submit">Request reset</Button>
+      </form>
+    </Split>
+  )
+}
+
+export function ResetPasswordPage() {
+  const nav = useNavigate()
+  const [accessToken] = useState(() => new URLSearchParams(window.location.hash.slice(1)).get('access_token') || '')
+  const [password, setPassword] = useState('')
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault()
+    if (!accessToken) {
+      setError('This password-reset link is invalid or expired. Request a new one.')
+      return
+    }
+    setBusy(true)
+    setError('')
+    setToken(accessToken)
+    try {
+      await api('/auth/password', { method: 'POST', body: JSON.stringify({ password }) })
+      setToken(null)
+      setMessage('Password updated. You can now sign in.')
+    } catch (err) {
+      setToken(null)
+      setError((err as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Split>
+      <Logo />
+      <h1 className="mt-8 font-instrument-serif text-4xl">Choose a new password</h1>
+      <form className="mt-8 space-y-4" onSubmit={(event) => void submit(event)}>
+        <Input type="password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={10} maxLength={128} placeholder="New password (10+ chars)" required />
+        {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
+        {message && <p role="status" className="text-sm text-emerald-200">{message}</p>}
+        {message ? <Button className="w-full" onClick={() => nav('/login')}>Return to sign in</Button> : <Button className="w-full" type="submit" disabled={busy}>{busy ? 'Updating…' : 'Update password'}</Button>}
       </form>
     </Split>
   )

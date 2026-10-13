@@ -11,6 +11,7 @@ const Dispatch = lazy(() => import('@/pages/Dispatch'))
 const LoginPage = lazy(() => import('@/pages/Auth').then((module) => ({ default: module.LoginPage })))
 const SignupPage = lazy(() => import('@/pages/Auth').then((module) => ({ default: module.SignupPage })))
 const ForgotPage = lazy(() => import('@/pages/Auth').then((module) => ({ default: module.ForgotPage })))
+const ResetPasswordPage = lazy(() => import('@/pages/Auth').then((module) => ({ default: module.ResetPasswordPage })))
 const MyReports = lazy(() => import('@/pages/MyReports'))
 const ReportWizard = lazy(() => import('@/pages/ReportWizard'))
 const RoutesPage = lazy(() => import('@/pages/RoutesPage'))
@@ -37,6 +38,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/forgot-password" element={<ForgotPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route element={<AppShell />}>
               <Route path="/report" element={<ReportWizard />} />
               <Route path="/my-reports" element={<MyReports />} />

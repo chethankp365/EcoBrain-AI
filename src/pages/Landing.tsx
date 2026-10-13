@@ -3,6 +3,7 @@ import { ArrowRight, Play, Recycle, Route, Shield, Sparkles } from 'lucide-react
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge, Button, GlassCard, Logo, Magnetic } from '@/components/ui'
+import { api } from '@/lib/api'
 
 const VIDEO =
   'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260622_204103_f607742e-09da-4cf5-bb06-4e67b0a531de.mp4'
@@ -25,6 +26,12 @@ const STEPS = [
   'Learn and report',
 ]
 const TICKER_ITEMS = ['12 open requests', '2 vehicles on shift', '1 urgent near hospital', 'OSRM travel times']
+const LIVE_STEPS = ['Create an account', 'Report a collection issue', 'Review the AI suggestion', 'Track the saved report']
+const LIVE_FEATURES = [
+  ['Supabase accounts', 'Email-confirmed sign-up, authenticated sessions, and role-aware profiles.'],
+  ['Persistent resident reports', 'Reports and private photos are stored in Supabase, with access checks on the API.'],
+  ['AI classification', 'Gemini runs server-side when configured; confidence, model version, and fallback are recorded.'],
+]
 
 const FEATURES = [
   ['Accounts and RBAC', 'Five roles, server-enforced permissions, audited role changes.'],
@@ -48,7 +55,21 @@ export default function Landing() {
   const [optimised, setOptimised] = useState(true)
   const [vehicles, setVehicles] = useState(2)
   const [urgent, setUrgent] = useState<number | null>(4)
+  const [demoMode, setDemoMode] = useState(false)
+  const [serviceAreas, setServiceAreas] = useState<string[]>([])
+  const [supabaseReady, setSupabaseReady] = useState(false)
+  const [geminiConfigured, setGeminiConfigured] = useState(false)
 
+  useEffect(() => {
+    api<{ demoMode: boolean; serviceAreas: string[]; supabaseReady: boolean; geminiConfigured: boolean }>('/health')
+      .then((health) => {
+        setDemoMode(health.demoMode)
+        setServiceAreas(health.serviceAreas)
+        setSupabaseReady(health.supabaseReady)
+        setGeminiConfigured(health.geminiConfigured)
+      })
+      .catch(() => setDemoMode(false))
+  }, [])
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
@@ -68,6 +89,8 @@ export default function Landing() {
       })
       .join(' ')
   }, [optimised, vehicles, urgent])
+  const liveFeatures = LIVE_FEATURES.filter(([title]) => title !== 'AI classification' || geminiConfigured)
+  const liveReady = supabaseReady && serviceAreas.length > 0
 
   return (
     <div className="bg-[#07090A] text-white">
@@ -86,7 +109,7 @@ export default function Landing() {
           <nav className="flex items-center justify-between px-6 py-5 md:px-12 md:py-6 lg:px-16">
             <Logo />
             <div className="hidden items-center gap-8 md:flex">
-              {NAV.map((n) => (
+              {(demoMode ? NAV : NAV.filter((n) => n.href === '#how' || n.href === '#features')).map((n) => (
                 <a key={n.href} href={n.href} className="text-sm font-light text-white/80 transition-colors duration-200 hover:text-white">
                   {n.label}
                 </a>
@@ -118,7 +141,7 @@ export default function Landing() {
                   </button>
                 </div>
                 <div className="flex flex-1 flex-col items-center justify-center">
-                  {[...NAV, { href: '/login', label: 'Sign in' }].map((n, i) => (
+                  {[...(demoMode ? NAV : NAV.filter((n) => n.href === '#how' || n.href === '#features')), { href: '/login', label: 'Sign in' }].map((n, i) => (
                     <motion.a
                       key={n.label}
                       href={n.href}
@@ -151,36 +174,53 @@ export default function Landing() {
             </h1>
             <p className="mt-4 max-w-md text-sm font-light leading-relaxed text-white/70 md:mt-5 md:text-base">
               <span className="block">Report it. Prioritise it. Route it.</span>
-              AI-assisted waste collection that teams and residents love.
+              {demoMode
+                ? 'AI-assisted waste collection that teams and residents love.'
+                : liveReady
+                  ? 'Resident reporting backed by Supabase, with server-side AI classification.'
+                  : 'The live pilot is being configured. Sign up to access the resident reporting service when the service area is ready.'}
             </p>
             <div className="mt-5 flex flex-col items-center gap-4 sm:flex-row md:mt-6">
-              <Magnetic>
-                <Link to="/report">
-                  <Button className="group">
-                    Report an Issue
-                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-                  </Button>
-                </Link>
-              </Magnetic>
-              <a href="#demo">
+              {demoMode || liveReady ? (
+                <Magnetic>
+                  <Link to={demoMode ? '/report' : '/login'}>
+                    <Button className="group">
+                      {demoMode ? 'Report an Issue' : 'Sign in to report'}
+                      <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                    </Button>
+                  </Link>
+                </Magnetic>
+              ) : (
+                <Button disabled>Service area setup in progress</Button>
+              )}
+              {demoMode && <a href="#demo">
                 <Button variant="secondary">
                   <Play className="h-4 w-4" /> Watch Demo
                 </Button>
-              </a>
+              </a>}
             </div>
           </div>
 
           <div className="relative z-10 mb-6 flex justify-center px-4">
             <div className="glass flex max-w-3xl items-center gap-6 overflow-hidden px-5 py-3 text-xs text-white/70">
-              <Badge tone="sim">SIMULATED</Badge>
-              <Ticker />
+              {demoMode ? (
+                <>
+                  <Badge tone="sim">SIMULATED</Badge>
+                  <Ticker />
+                </>
+              ) : (
+                <>
+                  <Badge>{liveReady ? 'LIVE PILOT' : 'SETUP'}</Badge>
+                  <span className="whitespace-nowrap">{serviceAreas.join(' · ') || 'Service area not configured'}</span>
+                </>
+              )}
             </div>
           </div>
           <div className="mb-8 flex justify-center text-[11px] tracking-[0.3em] text-white/40">SCROLL</div>
         </div>
       </section>
 
-      <section id="impact" className="mx-auto grid max-w-6xl gap-4 px-6 py-16 md:grid-cols-4">
+      {demoMode ? <section id="impact" className="mx-auto grid max-w-6xl gap-4 px-6 py-16 md:grid-cols-4">
         {[
           ['12,480', 'Requests handled'],
           ['9.4h', 'Avg resolution'],
@@ -193,13 +233,19 @@ export default function Landing() {
             <div className="text-sm text-white/50">{l}</div>
           </GlassCard>
         ))}
-      </section>
+      </section> : <section id="impact" className="mx-auto max-w-6xl px-6 py-16">
+        <GlassCard className="p-6">
+          <p className="text-xs uppercase tracking-[0.2em] text-white/40">Pilot status</p>
+          <p className="mt-3 font-instrument-serif text-3xl">{serviceAreas.join(', ') || 'Service area not configured'}</p>
+          <p className="mt-2 text-sm text-white/50">No service-volume or sustainability metrics are shown until real operational data exists.</p>
+        </GlassCard>
+      </section>}
 
       <section id="how" className="mx-auto max-w-6xl px-6 py-20">
         <p className="text-xs uppercase tracking-[0.3em] text-white/40">Workflow</p>
         <h2 className="mt-2 font-instrument-serif text-4xl md:text-6xl">How it works</h2>
         <div className="mt-10 grid gap-4 md:grid-cols-4">
-          {STEPS.map((s, i) => (
+          {(demoMode ? STEPS : LIVE_STEPS).map((s, i) => (
             <motion.div key={s} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className="glass p-5">
               <div className="text-[#6EE7A8]">{String(i + 1).padStart(2, '0')}</div>
               <div className="mt-2 font-medium">{s}</div>
@@ -208,7 +254,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="demo" className="mx-auto max-w-6xl px-6 py-20">
+      {demoMode && <section id="demo" className="mx-auto max-w-6xl px-6 py-20">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="font-instrument-serif text-4xl md:text-6xl">Interactive route demo</h2>
@@ -251,12 +297,12 @@ export default function Landing() {
             <span className="text-white/40">Click a stop to mark urgent</span>
           </div>
         </GlassCard>
-      </section>
+      </section>}
 
       <section id="features" className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="font-instrument-serif text-4xl md:text-6xl">Thirteen capabilities</h2>
+        <h2 className="font-instrument-serif text-4xl md:text-6xl">{demoMode ? 'Thirteen capabilities' : 'Available live features'}</h2>
         <div className="mt-10 grid gap-4 md:grid-cols-3">
-          {FEATURES.map(([t, d]) => (
+          {(demoMode ? FEATURES : liveFeatures).map(([t, d]) => (
             <GlassCard key={t} className="p-6 transition hover:border-[#6EE7A8]/40 hover:shadow-[0_0_40px_rgba(110,231,168,.12)]">
               <Sparkles className="mb-3 h-4 w-4 text-[#6EE7A8]" />
               <h3 className="font-medium">{t}</h3>
@@ -266,7 +312,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-20">
+      {demoMode && <section className="mx-auto max-w-6xl px-6 py-20">
         <h2 className="font-instrument-serif text-4xl">What is genuinely AI?</h2>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {[
@@ -281,16 +327,18 @@ export default function Landing() {
             </GlassCard>
           ))}
         </div>
-      </section>
+      </section>}
 
-      <Roles />
+      {demoMode && <Roles />}
 
       <section className="mx-auto max-w-6xl px-6 py-20">
         <GlassCard className="p-8 md:p-12">
           <Shield className="text-[#6EE7A8]" />
           <h2 className="mt-4 font-instrument-serif text-4xl">Trust, privacy, human in the loop</h2>
           <p className="mt-3 max-w-2xl text-white/60">
-            Role-based access, minimal data, retention jobs, signed photo URLs, and dispatchers who approve every route. Predictions are never presented as proof.
+            {demoMode
+              ? 'Role-based access, minimal data, retention jobs, signed photo URLs, and dispatchers who approve every route. Predictions are never presented as proof.'
+              : 'Account sessions and resident report access are enforced by the server. AI results remain suggestions, not proof; operational modules stay disabled until they use live records.'}
           </p>
         </GlassCard>
       </section>
@@ -312,10 +360,10 @@ export default function Landing() {
           <Logo />
           <div className="flex gap-6">
             <Link to="/transparency">Transparency</Link>
-            <Link to="/evaluation">Evaluation</Link>
+            {demoMode && <Link to="/evaluation">Evaluation</Link>}
             <a href="#features">Features</a>
           </div>
-          <span>© 2026 EcoBrain AI · simulated demo data labelled as such</span>
+          <span>© 2026 EcoBrain AI{demoMode ? ' · simulated demo data labelled as such' : ' · live pilot'}</span>
         </div>
       </footer>
     </div>

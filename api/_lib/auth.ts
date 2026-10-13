@@ -3,6 +3,7 @@ import { randomBytes } from 'node:crypto'
 import { env } from './env'
 import { apiError } from './errors'
 import { store } from './store'
+import { supabaseProfileForToken } from './supabase'
 import type { Profile, UserRole } from '../../shared/types'
 
 export function signDemo(userId: string) {
@@ -26,6 +27,7 @@ export async function authMiddleware(c: Context, next: Next) {
     path === '/api/auth/login' ||
     path === '/api/auth/signup' ||
     path === '/api/auth/forgot' ||
+    path === '/api/auth/refresh' ||
     path.startsWith('/api/docs') ||
     path.startsWith('/api/cron/')
   if (open) return next()
@@ -33,6 +35,11 @@ export async function authMiddleware(c: Context, next: Next) {
   const header = c.req.header('authorization') || ''
   const token = header.replace(/^Bearer\s+/i, '')
   if (!token) throw apiError(401, 'unauthenticated', 'Sign in required')
+  if (!env().demoMode) {
+    const profile = await supabaseProfileForToken(token)
+    c.set('profile', profile)
+    return next()
+  }
   const userId = readDemo(token)
   const profile = store.profiles.find((p) => p.id === userId)
   if (!profile) throw apiError(401, 'unauthenticated', 'Invalid session')

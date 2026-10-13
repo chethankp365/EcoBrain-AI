@@ -2,7 +2,7 @@ import { Bell, Menu, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate, type NavLinkRenderProps } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Button, Drawer, Logo } from '@/components/ui'
+import { Button, Drawer, Logo, useToast } from '@/components/ui'
 import { homeFor, useAuth } from '@/lib/auth'
 import { api } from '@/lib/api'
 import CommandPalette from '@/components/CommandPalette'
@@ -43,28 +43,49 @@ export default function AppShell() {
   const { profile, loading, logout } = useAuth()
   const nav = useNavigate()
   const { t, i18n } = useTranslation()
+  const toast = useToast()
   const [collapsed, setCollapsed] = useState(false)
   const [notes, setNotes] = useState(false)
   const [unread, setUnread] = useState(0)
   const [items, setItems] = useState<{ id: string; title: string; body: string }[]>([])
+  const [demoMode, setDemoMode] = useState(false)
+  const [liveReady, setLiveReady] = useState(false)
+
+  useEffect(() => {
+    api<{ demoMode: boolean; supabaseReady: boolean; serviceAreas: string[] }>('/health')
+      .then((status) => {
+        setDemoMode(status.demoMode)
+        setLiveReady(status.supabaseReady && status.serviceAreas.length > 0)
+      })
+      .catch(() => setDemoMode(false))
+  }, [])
 
   useEffect(() => {
     if (!loading && !profile) nav('/login')
   }, [loading, profile, nav])
 
   useEffect(() => {
-    if (!profile) return
+    if (!profile || !demoMode) return
     api<{ unread: number; data: { id: string; title: string; body: string }[] }>('/notifications').then((r) => {
       setUnread(r.unread)
       setItems(r.data)
+    }).catch(() => {
+      setUnread(0)
+      setItems([])
     })
-  }, [profile])
+  }, [profile, demoMode])
 
   if (loading || !profile) {
     return <div className="grid min-h-screen place-items-center text-white/50">Loading EcoBrain…</div>
   }
 
-  const links = LINKS[profile.role]
+  const links = demoMode
+    ? LINKS[profile.role]
+    : profile.role === 'resident'
+      ? liveReady
+        ? LINKS.resident
+        : [{ to: '/my-reports', key: 'myReports' }]
+      : []
 
   return (
     <div className="flex min-h-screen bg-[#07090A] text-white">
@@ -107,15 +128,29 @@ export default function AppShell() {
             <option value="hi">HI</option>
             <option value="kn">KN</option>
           </select>
-          <button className="relative min-h-[44px] min-w-[44px]" onClick={() => setNotes(true)} aria-label="Notifications">
-            <Bell />
-            {unread > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#6EE7A8]" />}
-          </button>
-          <Button variant="secondary" className="px-4 py-2" onClick={() => { logout(); nav('/') }}>
+          {demoMode && (
+            <button className="relative min-h-[44px] min-w-[44px]" onClick={() => setNotes(true)} aria-label="Notifications">
+              <Bell />
+              {unread > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#6EE7A8]" />}
+            </button>
+          )}
+          <Button variant="secondary" className="px-4 py-2" onClick={() => { void logout().then(() => nav('/')).catch((error: Error) => toast(`Signed out locally; server sign-out failed: ${error.message}`)) }}>
             {profile.displayName}
           </Button>
         </header>
         <main className="flex-1 overflow-auto p-4 md:p-8">
+          {!demoMode && !liveReady && (
+            <div role="status" className="mb-5 rounded-2xl border border-amber-300/20 bg-amber-300/5 p-4 text-sm text-amber-100">
+              {profile.role === 'resident'
+                ? 'The live service area is not configured yet. Reporting will become available after the Supabase setup is complete.'
+                : 'This account has no live operational modules enabled yet. Dispatch, fleet, routes, worker tracking, analytics, and sensor data are unavailable until real operational records are configured.'}
+            </div>
+          )}
+          {!demoMode && liveReady && profile.role !== 'resident' && (
+            <div role="status" className="mb-5 rounded-2xl border border-amber-300/20 bg-amber-300/5 p-4 text-sm text-amber-100">
+              This account has no live operational modules enabled yet. Dispatch, fleet, routes, worker tracking, analytics, and sensor data are unavailable until real operational records are configured.
+            </div>
+          )}
           <Outlet />
         </main>
         <nav className="flex justify-around border-t border-white/10 p-2 md:hidden">
@@ -138,7 +173,7 @@ export default function AppShell() {
         </div>
       </Drawer>
       <CommandPalette />
-      <DemoGuide />
+      {demoMode && <DemoGuide />}
       <a className="sr-only" href={homeFor(profile.role)}>
         skip
       </a>

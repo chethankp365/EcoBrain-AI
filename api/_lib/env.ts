@@ -1,8 +1,8 @@
 export function env() {
   return {
-    supabaseUrl: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '',
-    supabaseAnon: process.env.VITE_SUPABASE_ANON_KEY || '',
-    serviceRole: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+    supabaseUrl: process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
+    supabaseAnon: process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '',
+    serviceRole: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '',
     geminiKey: process.env.GEMINI_API_KEY || '',
     geminiModel: process.env.GEMINI_MODEL || 'gemini-2.0-flash',
     aiThreshold: Number(process.env.AI_CONFIDENCE_THRESHOLD || 0.65),
@@ -11,7 +11,7 @@ export function env() {
     googleMaps: process.env.GOOGLE_MAPS_API_KEY || '',
     resend: process.env.RESEND_API_KEY || '',
     cronSecret: process.env.CRON_SECRET || '',
-    demoMode: (process.env.DEMO_MODE ?? 'true') !== 'false',
+    demoMode: (process.env.DEMO_MODE ?? 'false') !== 'false',
     origin: process.env.VITE_APP_ORIGIN || 'http://localhost:5173',
   }
 }
