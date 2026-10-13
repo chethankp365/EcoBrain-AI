@@ -19,18 +19,11 @@
     }
   ],
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "functions": {
     "api/[...path].ts": {
       "maxDuration": 60
     }
-  },
-  "crons": [
-    {
-      "path": "/api/your-endpoint",
-      "schedule": "0 6 * * *"
-    }
-  ]
+  }
 }
